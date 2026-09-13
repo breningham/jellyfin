@@ -1,0 +1,31 @@
+# Where xtream-sync puts each title inside its /output volume (Jellyfin sees
+# it at /iptv). Rules run top to bottom; the first rule whose every `match`
+# condition holds decides. Without any rules: Movies/{title} ({year}) and
+# Shows/{title} ({year}).
+#
+# match keys: kind (movie|series), category (regex, or list of ids),
+#   title (regex), tag (regex over provider prefixes like EN, 4K-NF),
+#   year_min, year_max, is_4k (true|false)
+# actions: into (library folder template), folder (title folder template),
+#   skip: true
+# template variables: {title} {year} {tmdb} {kind} {category} {letter} {decade}
+#
+# A custom folder template changes the name compared against your real
+# libraries; collision detection then relies on the TMDb id in your .nfo
+# files.
+#
+# Try edits with:  make xtream-check-layout
+rules:
+  - match: { title: "^WWE " }
+    skip: true
+  - match: { category: "SPORT" }
+    skip: true
+  - match: { category: "KIDS" }
+    into: "Kids/{kind}"
+  - match: { category: "DOCU" }
+    into: "Documentaries/{kind}"
+# Real libraries as mounted in the sidecar (read-only at /media). A title
+# whose folder name or TMDb ID already exists there is not written.
+collisions:
+  movies: ["/media/Movies"]
+  shows: ["/media/Shows"]

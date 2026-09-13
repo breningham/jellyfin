@@ -1,0 +1,27 @@
+# Example of the file `make xtream-categories` generates as config/xtream/categories.yaml
+# (git-ignored, since it lists your provider's catalogue). Every category the provider
+# offers is listed; uncomment a line to enable it. Edits are picked up on the next
+# sync run (or `make xtream-sync-once`). Titles present in several enabled
+# categories are collapsed by TMDb ID, preferring a 4K entry, then the newest one.
+#
+# `live:` categories become Jellyfin Live TV channels (live.m3u + guide.xml).
+# Refresh this list, keeping the current selection:  make xtream-categories
+
+vod:
+  - 101   # MOVIES  [4K]
+  - 102   # MOVIES
+  #- 103   # MOVIES (MULTI-SUBS)
+  - 110   # KIDS MOVIES
+  - 120   # DOCUMENTARIES
+  #- 130   # SPORT EVENTS
+
+series:
+  - 201   # SERIES  [4K]
+  - 202   # SERIES
+  - 210   # KIDS SERIES
+  #- 220   # DOCU-SERIES
+
+live:
+  - 301   # UK| GENERAL
+  #- 302   # UK| SPORTS
+  - 303   # UK| KIDS

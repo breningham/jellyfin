@@ -1,0 +1,20 @@
+FROM docker.io/library/python:3.12-slim
+
+LABEL org.opencontainers.image.source="https://github.com/breningham/jellyfin" \
+      org.opencontainers.image.description="Sync an Xtream IPTV provider's VOD, series and live TV into Jellyfin STRM/M3U libraries" \
+      org.opencontainers.image.licenses="MIT"
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+COPY pyproject.toml ./
+COPY xtream_sync ./xtream_sync
+RUN pip install .
+
+# Container root maps to the host user under rootless Podman, so files
+# written to /output are owned by the user on the host. /output and /state
+# are bind/named-mounted by compose; no bare VOLUME here, which would
+# otherwise create stray anonymous volumes.
+ENTRYPOINT ["xtream-sync"]

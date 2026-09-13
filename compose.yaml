@@ -1,0 +1,131 @@
+# Jellyfin and xtream-sync run inside gluetun's network namespace so all their
+# internet traffic (IPTV, metadata) leaves via Windscribe WireGuard. Tailscale
+# stays on the bridge and proxies to gluetun:8096. Containers are deliberately
+# NOT in one pod: a pod would put Tailscale inside the VPN namespace too.
+x-podman:
+  in_pod: false
+
+services:
+  gluetun:
+    image: docker.io/qmcgaw/gluetun:v3.41.3
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      # NET_RAW lets Gluetun's health probe use ICMP instead of DNS fallback.
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - TZ=${TZ:-Europe/London}
+      # Endpoint, keys and address come from config/windscribe/wg0.conf.
+      # Gluetun's custom provider needs a numeric Endpoint, not a hostname.
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+      - WIREGUARD_IMPLEMENTATION=auto
+      - FIREWALL=on
+      # Lets Tailscale (bridge) and the 127.0.0.1:8096 host mapping reach Jellyfin.
+      - FIREWALL_INPUT_PORTS=8096
+    # The image defines no HEALTHCHECK; without one, `service_healthy` below
+    # would wait forever.
+    healthcheck:
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - gluetun_data:/gluetun
+      - ./config/windscribe/wg0.conf:/gluetun/wireguard/wg0.conf:ro
+    ports:
+      - "127.0.0.1:8096:8096"
+    networks: [jellyfin]
+
+  jellyfin:
+    image: docker.io/jellyfin/jellyfin:10.11.11
+    restart: unless-stopped
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    network_mode: "service:gluetun"
+    environment:
+      - TZ=${TZ:-Europe/London}
+      - JELLYFIN_PublishedServerUrl=https://${TS_HOSTNAME:-jellyfin}.${TS_TAILNET:-tail86146.ts.net}
+    volumes:
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
+      - ${MEDIA_DIR:-/opt/media}:/media:ro
+      # Read-write so Jellyfin can save artwork and NFOs beside the .strm files.
+      - iptv_library:/iptv
+      # Podman rejects `dns:` when sharing another container's network, and
+      # does not copy gluetun's resolv.conf, so point at gluetun's resolver.
+      - ./config/vpn/resolv.conf:/etc/resolv.conf:ro
+    devices:
+      - /dev/dri:/dev/dri
+
+  tailscale:
+    image: docker.io/tailscale/tailscale:v1.102.3
+    restart: unless-stopped
+    depends_on:
+      - jellyfin
+    # No `hostname:` here — naming this container after the service makes the
+    # Serve target resolve to itself instead of jellyfin.
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY:-}
+      - TS_AUTH_ONCE=true
+      - TS_EXTRA_ARGS=${TS_EXTRA_ARGS:-}
+      - TS_HOSTNAME=${TS_HOSTNAME:-jellyfin}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve.json
+      - TS_USERSPACE=true
+    volumes:
+      - jellyfin_tailscale_state:/var/lib/tailscale
+      # Tailscale watches the containing directory for Serve config updates.
+      - ./config/tailscale:/config:ro
+    networks: [jellyfin]
+
+  xtream-sync:
+    # Published by .github/workflows/container.yml; `make up` still builds
+    # locally from ./xtream-sync and tags the result with this name.
+    build: ./xtream-sync
+    image: ghcr.io/breningham/jellyfin-xtream-sync:latest
+    restart: unless-stopped
+    depends_on:
+      gluetun:
+        condition: service_healthy
+      jellyfin:
+        condition: service_started
+    network_mode: "service:gluetun"
+    # Run as the host user rather than container root. keep-id maps that uid
+    # 1:1 into the container, so files under /output and /state stay owned by
+    # you. The Makefile exports PUID/PGID from `id`.
+    user: "${PUID:-1000}:${PGID:-1000}"
+    userns_mode: "keep-id:uid=${PUID:-1000},gid=${PGID:-1000}"
+    environment:
+      - TZ=${TZ:-Europe/London}
+      - XTREAM_HOST=${XTREAM_HOST:-}
+      - XTREAM_USERNAME=${XTREAM_USERNAME:-}
+      - XTREAM_PASSWORD=${XTREAM_PASSWORD:-}
+      - XTREAM_SYNC_INTERVAL=${XTREAM_SYNC_INTERVAL:-21600}
+      # Same network namespace as Jellyfin.
+      - JELLYFIN_URL=http://127.0.0.1:8096
+      - JELLYFIN_API_KEY=${JELLYFIN_API_KEY:-}
+    volumes:
+      # Generated .strm tree; Jellyfin sees it read-only at /iptv and merges
+      # it into its libraries. Nothing is written under ${MEDIA_DIR}.
+      - iptv_library:/output
+      - ${MEDIA_DIR:-/opt/media}:/media:ro
+      - jellyfin_xtream_state:/state
+      # Category selection; re-read on every run.
+      - ./config/xtream:/config:ro
+      - ./config/vpn/resolv.conf:/etc/resolv.conf:ro
+
+volumes:
+  jellyfin_config:
+  jellyfin_cache:
+  jellyfin_tailscale_state:
+  jellyfin_xtream_state:
+  gluetun_data:
+  iptv_library:
+
+networks:
+  jellyfin:

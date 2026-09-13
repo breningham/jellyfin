@@ -1,0 +1,296 @@
+/* AFTERGLOW — Jellyfin Web 10.11. Paste into Dashboard > Branding > Custom CSS.
+ * Select the Dark theme. Upload cinematic-background.png as the splash image.
+ * No external fonts, assets, or imports are required.
+ */
+:root {
+    --afterglow-ink: #101722;
+    --afterglow-panel: #1b2432;
+    --afterglow-ivory: #f3ebdd;
+    --afterglow-ember: #ff784f;
+    --afterglow-lilac: #a99bcb;
+}
+
+/* Preserve Jellyfin's backdrop and video layers. */
+.backgroundContainer {
+    background-color: var(--afterglow-ink);
+}
+
+.skinHeader,
+.mainDrawer {
+    background-color: var(--afterglow-ink);
+    color: var(--afterglow-ivory);
+}
+
+.dialog,
+.toast {
+    background-color: var(--afterglow-panel);
+    color: var(--afterglow-ivory);
+}
+
+.button-submit,
+.button-submit:focus,
+.button-submit:hover {
+    background: var(--afterglow-ember);
+    color: var(--afterglow-ink);
+}
+
+.emby-input,
+.emby-textarea,
+.emby-select {
+    background-color: var(--afterglow-ink);
+    color: var(--afterglow-ivory);
+    border-color: #788191;
+    border-radius: 0.4em;
+}
+
+.emby-input:focus,
+.emby-textarea:focus,
+.emby-select:focus {
+    border-color: var(--afterglow-ember);
+}
+
+.emby-button:focus-visible,
+.emby-tab-button:focus-visible,
+.navMenuOption:focus-visible {
+    outline: 3px solid var(--afterglow-lilac);
+    outline-offset: 3px;
+}
+
+.emby-tab-button-active,
+.inputLabelFocused,
+.selectLabelFocused,
+.textareaLabelFocused {
+    color: var(--afterglow-ember);
+}
+
+/* Only lighten the login backdrop; keep library and playback layers intact. */
+body:has(#loginPage:not(.hide)) .backgroundContainer.withBackdrop {
+    background: rgb(16 23 34 / 12%);
+}
+
+body:has(#loginPage:not(.hide)) .skinHeader {
+    background: transparent;
+    backdrop-filter: none;
+}
+
+.pageTitleWithDefaultLogo {
+    background-image: none;
+    width: auto;
+    min-width: 10em;
+}
+
+.pageTitleWithDefaultLogo::after {
+    content: "AFTERGLOW";
+    color: var(--afterglow-ivory);
+    font-size: 0.8em;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+}
+
+/* Jellyfin supplies the splash image, including its configured server URL. */
+#loginPage {
+    color: var(--afterglow-ivory);
+    background: linear-gradient(90deg, rgb(16 23 34 / 45%), transparent);
+}
+
+#loginPage > .padded-left {
+    width: min(100%, 30rem);
+    margin: clamp(2rem, 7vh, 6rem) auto 2rem;
+    padding: 1.75rem;
+    box-sizing: border-box;
+    background: rgb(16 23 34 / 92%);
+    border: 1px solid rgb(243 235 221 / 14%);
+    border-radius: 1rem;
+    box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 20%);
+}
+
+#loginPage > .padded-left::before {
+    content: "AFTERGLOW";
+    display: block;
+    margin: 0.5rem 0 1.5rem;
+    color: var(--afterglow-ivory);
+    font-size: clamp(1.4rem, 5vw, 1.9rem);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-align: center;
+}
+
+#loginPage > .padded-left::after {
+    content: "Stay for one more.";
+    display: block;
+    margin-top: 1.5rem;
+    color: var(--afterglow-ivory);
+    font-family: Georgia, serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    text-align: center;
+}
+
+#loginPage .manualLoginForm,
+#loginPage .visualLoginForm,
+#loginPage .readOnlyContent {
+    width: 100%;
+    max-width: none;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#loginPage .raised:not(.button-submit) {
+    background: var(--afterglow-panel);
+    color: var(--afterglow-ivory);
+}
+
+#loginPage .emby-checkbox:checked + span + .checkboxOutline {
+    background-color: var(--afterglow-ember);
+    border-color: var(--afterglow-ember);
+}
+
+#loginPage .checkboxIcon {
+    color: var(--afterglow-ink);
+}
+
+#loginPage .sectionTitle,
+#loginPage .visualLoginForm h1 {
+    letter-spacing: 0.04em;
+    font-weight: 500;
+    font-size: 1.2rem;
+    margin-top: 0;
+}
+
+@media (min-width: 70rem) {
+    #loginPage > .padded-left {
+        margin-left: max(4rem, calc((100vw - 76rem) / 2));
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 36rem) {
+    #loginPage > .padded-left {
+        width: calc(100% - 2rem);
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+    }
+}
+
+#loginPage .loginDisclaimer {
+    color: var(--afterglow-ivory);
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* Library — preserve Jellyfin's responsive rows, artwork and card actions. */
+.libraryPage {
+    color: var(--afterglow-ivory);
+}
+
+#indexPage {
+    background-image: radial-gradient(ellipse 75% 28rem at 100% 0, rgb(255 120 79 / 6%), transparent);
+}
+
+.libraryPage .sectionTitle {
+    color: var(--afterglow-ivory);
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+.libraryPage .sectionTitleTextButton {
+    color: var(--afterglow-ivory);
+}
+
+.libraryPage .sectionTitleTextButton:hover {
+    color: var(--afterglow-ember);
+}
+
+#indexPage .verticalSection:not(:empty) {
+    margin-bottom: 1.75rem;
+}
+
+.libraryPage .cardImageContainer,
+.libraryPage .cardContent,
+.libraryPage .cardOverlayContainer,
+.libraryPage .cardBox:not(.visualCardBox) .cardPadder,
+.libraryPage .blurhash-canvas {
+    border-radius: 0.65rem;
+}
+
+.libraryPage .cardBox:not(.visualCardBox) .cardPadder {
+    background-color: var(--afterglow-panel);
+    box-shadow: 0 0.3rem 0.8rem rgb(0 0 0 / 24%);
+}
+
+/* Only placeholders: never cover a library's or movie's actual image. */
+.libraryPage .defaultCardBackground {
+    background-color: var(--afterglow-panel);
+    background-image: linear-gradient(135deg, rgb(169 155 203 / 10%), rgb(255 120 79 / 13%));
+    color: var(--afterglow-ivory);
+}
+
+.libraryPage .defaultCardBackground .cardImageIcon {
+    color: var(--afterglow-ember);
+}
+
+.libraryPage .cardImageContainer > .cardDefaultText {
+    font-size: clamp(1rem, 1.6vw, 1.65rem);
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    padding: 1rem;
+}
+
+.libraryPage .cardText {
+    color: var(--afterglow-ivory);
+}
+
+.libraryPage .cardText-first {
+    padding-top: 0.65em;
+}
+
+.libraryPage .cardText-secondary {
+    color: #b0b4bf;
+    padding-top: 0.25em;
+}
+
+.libraryPage .card:focus-within .cardImageContainer {
+    outline: 2px solid var(--afterglow-ember);
+    outline-offset: -2px;
+    border-radius: 0.65rem;
+}
+
+.libraryPage .cardOverlayFab-primary {
+    background-color: var(--afterglow-ember);
+    color: var(--afterglow-ink);
+}
+
+.libraryPage .itemProgressBarForeground,
+.libraryPage .playedIndicator {
+    background-color: var(--afterglow-ember);
+    color: var(--afterglow-ink);
+}
+
+.libraryPage .countIndicator {
+    background-color: var(--afterglow-panel);
+    color: var(--afterglow-ivory);
+}
+
+.mainDrawer .navMenuOption-selected {
+    background-color: rgb(255 120 79 / 14%);
+    color: var(--afterglow-ember);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .libraryPage .card:hover .cardImageContainer {
+        outline: 1px solid var(--afterglow-ember);
+        outline-offset: -1px;
+        border-radius: 0.65rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #loginPage *,
+    #loginPage *::before,
+    #loginPage *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
