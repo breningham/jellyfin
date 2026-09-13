@@ -115,8 +115,8 @@ def test_load_categories_missing_file(tmp_path):
         load_categories(tmp_path / "nope.yaml")
 
 
-def test_committed_categories_file_loads():
-    path = Path(__file__).resolve().parents[2] / "config/xtream/categories.yaml"
+def test_committed_categories_example_loads():
+    path = Path(__file__).resolve().parents[2] / "config/xtream/categories.example.yaml"
     categories = load_categories(path)
     assert categories.vod or categories.series
     assert all(isinstance(i, int) for i in categories.vod + categories.series)
